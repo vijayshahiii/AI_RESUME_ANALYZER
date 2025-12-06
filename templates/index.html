@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ana.ai - AI Resume Analyzer</title>
+    
+    <!-- Favicon - Website Logo -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><defs><linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'><stop offset='0%' style='stop-color:%234f46e5;stop-opacity:1' /><stop offset='100%' style='stop-color:%237c3aed;stop-opacity:1' /></linearGradient></defs><rect width='100' height='100' rx='20' fill='url(%23grad)'/><path d='M30 50 L45 65 L70 35' stroke='white' stroke-width='8' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>">
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .card-shadow {
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
+        .score-circle {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto;
+            position: relative;
+        }
+        /* Responsive score circle for mobile */
+        @media (max-width: 640px) {
+            .score-circle {
+                width: 150px;
+                height: 150px;
+            }
+        }
+        .loading-spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .nav-blur {
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Mobile menu animation */
+        .mobile-menu {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-in-out;
+        }
+        .mobile-menu.active {
+            max-height: 500px;
+        }
+        /* Responsive text sizes */
+        @media (max-width: 640px) {
+            .hero-title {
+                font-size: 2.5rem !important;
+                line-height: 1.2;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-blue-50 min-h-screen">
+    
+    <!-- ============================================ -->
+    <!-- NAVBAR - Minimal Professional Navigation    -->
+    <!-- ============================================ -->
+    <nav class="nav-blur border-b border-gray-200 sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4">
+            <div class="flex items-center justify-between">
+                <!-- Logo - Click to scroll to top -->
+                <a href="#home" class="flex items-center space-x-3 cursor-pointer">
+                    <div class="w-10 h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <span class="text-2xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Ana.ai</span>
+                </a>
+                
+                <!-- Desktop Nav Items -->
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="#home" class="text-gray-700 hover:text-indigo-600 font-medium transition">Home</a>
+                    <a href="#upload" class="text-gray-700 hover:text-indigo-600 font-medium transition">Upload</a>
+                    <a href="#features" class="text-gray-700 hover:text-indigo-600 font-medium transition">Features</a>
+                    <a href="#how-it-works" class="text-gray-700 hover:text-indigo-600 font-medium transition">How it Works</a>
+                </div>
+                
+                <!-- Get Started Button - Scrolls to upload section -->
+                <div class="hidden md:block">
+                    <a href="#upload" class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium hover:shadow-lg transition">
+                        Get Started
+                    </a>
+                </div>
+                
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden text-gray-700 hover:text-indigo-600 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Mobile Menu -->
+            <div id="mobileMenu" class="mobile-menu md:hidden">
+                <div class="py-4 space-y-3">
+                    <a href="#home" class="block text-gray-700 hover:text-indigo-600 font-medium transition py-2">Home</a>
+                    <a href="#upload" class="block text-gray-700 hover:text-indigo-600 font-medium transition py-2">Upload</a>
+                    <a href="#features" class="block text-gray-700 hover:text-indigo-600 font-medium transition py-2">Features</a>
+                    <a href="#how-it-works" class="block text-gray-700 hover:text-indigo-600 font-medium transition py-2">How it Works</a>
+                    <a href="#upload" class="block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 py-2 rounded-lg font-medium text-center">
+                        Get Started
+                    </a>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- ============================================ -->
+    <!-- HOME SECTION - Hero/Landing                 -->
+    <!-- ============================================ -->
+    <div id="home" class="container mx-auto px-4 sm:px-6 py-8 sm:py-12 text-center">
+        <h1 class="hero-title text-4xl sm:text-5xl md:text-6xl font-bold text-gray-900 mb-4">
+            AI-Powered Resume Analysis
+        </h1>
+        <p class="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto mb-6 sm:mb-8 px-4">
+            Get instant feedback on your resume with advanced Machine Learning algorithms
+        </p>
+        <a href="#upload" class="inline-block bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-6 sm:px-8 py-3 rounded-lg font-bold text-base sm:text-lg hover:shadow-xl transition">
+            Analyze Your Resume Now
+        </a>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- UPLOAD SECTION - Main Upload Area           -->
+    <!-- ============================================ -->
+    <div id="upload" class="container mx-auto px-4 sm:px-6 py-6 sm:py-8 max-w-7xl">
+        
+        <!-- Upload Section -->
+        <div class="grid md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+            
+            <!-- Upload Card -->
+            <div class="bg-white rounded-2xl card-shadow p-6 sm:p-8">
+                <div class="flex items-center mb-4 sm:mb-6">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-blue-600 mr-2 sm:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Upload Your Resume</h2>
+                </div>
+                
+                <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 sm:p-8 text-center hover:border-blue-500 transition duration-300 cursor-pointer" id="dropZone">
+                    <input type="file" id="fileInput" accept=".pdf,.docx,.txt" class="hidden">
+                    <svg class="w-12 h-12 sm:w-16 sm:h-16 text-gray-400 mx-auto mb-3 sm:mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <p class="text-gray-600 font-medium mb-2 text-sm sm:text-base">Click to upload or drag and drop</p>
+                    <p class="text-xs sm:text-sm text-gray-400">PDF, DOCX, or TXT (Max 5MB)</p>
+                    <p id="fileName" class="mt-3 sm:mt-4 text-blue-600 font-medium hidden text-sm sm:text-base break-all"></p>
+                </div>
+                
+                <button id="analyzeBtn" class="w-full mt-4 sm:mt-6 bg-blue-600 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg hover:bg-blue-700 transition duration-300 shadow-lg disabled:bg-gray-400 disabled:cursor-not-allowed">
+                    Analyze Resume with AI
+                </button>
+            </div>
+            
+            <!-- Demo Card -->
+            <div class="bg-white rounded-2xl card-shadow p-6 sm:p-8">
+                <div class="flex items-center mb-4 sm:mb-6">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-green-600 mr-2 sm:mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h2 class="text-xl sm:text-2xl font-bold text-gray-800">Try Demo Resume</h2>
+                </div>
+                
+                <div class="bg-green-50 rounded-xl p-4 sm:p-6 mb-4 sm:mb-6">
+                    <p class="text-gray-700 mb-3 sm:mb-4 text-sm sm:text-base">Don't have a resume ready? Try our professional demo resume to see how the ML analyzer works!</p>
+                    <ul class="text-xs sm:text-sm text-gray-600 space-y-2">
+                        <li>✓ See real-time ML analysis</li>
+                        <li>✓ Understand scoring metrics</li>
+                        <li>✓ Learn improvement tips</li>
+                        <li>✓ Job role matching demo</li>
+                    </ul>
+                </div>
+                
+                <button id="demoBtn" class="w-full bg-green-600 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg hover:bg-green-700 transition duration-300 shadow-lg mb-3">
+                    Use Demo Resume
+                </button>
+                
+                <button id="downloadDemoBtn" class="w-full bg-gray-600 text-white py-3 sm:py-4 rounded-xl font-bold text-base sm:text-lg hover:bg-gray-700 transition duration-300 shadow-lg flex items-center justify-center">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                    </svg>
+                    Download Demo Resume
+                </button>
+            </div>
+        </div>
+        
+        <!-- ============================================ -->
+        <!-- FEATURES SECTION - What Ana.ai Offers       -->
+        <!-- ============================================ -->
+        <div id="features" class="bg-white rounded-2xl card-shadow p-8 mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">Why Choose Ana.ai?</h2>
+            <div class="grid md:grid-cols-3 gap-6">
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">AI-Powered Scoring</h3>
+                    <p class="text-gray-600">Advanced Machine Learning algorithms analyze your resume like a real recruiter</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Instant Analysis</h3>
+                    <p class="text-gray-600">Get detailed feedback in seconds, not days</p>
+                </div>
+                <div class="text-center p-6">
+                    <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                        </svg>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Job Matching</h3>
+                    <p class="text-gray-600">See which job roles best match your skills and experience</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- ============================================ -->
+        <!-- HOW IT WORKS SECTION - Step-by-step Guide   -->
+        <!-- ============================================ -->
+        <div id="how-it-works" class="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-2xl card-shadow p-8 mb-8">
+            <h2 class="text-3xl font-bold text-gray-900 text-center mb-8">How It Works</h2>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-indigo-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                        1
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Upload Resume</h3>
+                    <p class="text-gray-600">Upload your resume in PDF, DOCX, or TXT format</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                        2
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">AI Analysis</h3>
+                    <p class="text-gray-600">Our ML algorithms analyze your content in seconds</p>
+                </div>
+                <div class="text-center">
+                    <div class="w-16 h-16 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-4 text-2xl font-bold">
+                        3
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-2">Get Feedback</h3>
+                    <p class="text-gray-600">Receive detailed insights and improvement tips</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden bg-white rounded-2xl card-shadow p-12 text-center mb-8">
+            <div class="loading-spinner mx-auto mb-4"></div>
+            <h3 class="text-2xl font-bold text-gray-800 mb-2">Analyzing with Machine Learning...</h3>
+            <p class="text-gray-600">Our AI is processing your resume using advanced ML algorithms</p>
+        </div>
+        
+        <!-- Results Section -->
+        <div id="resultsSection" class="hidden">
+            
+            <!-- Score Card -->
+            <div class="bg-white rounded-2xl card-shadow p-6 sm:p-8 mb-6 text-center">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-4 sm:mb-6">Overall Resume Score</h2>
+                <div class="score-circle" id="scoreCircle">
+                    <div class="text-center">
+                        <div id="scoreValue" class="text-5xl sm:text-7xl font-bold text-white"></div>
+                        <div class="text-white text-base sm:text-lg mt-2 font-medium">out of 100</div>
+                    </div>
+                </div>
+                <p id="scoreMessage" class="mt-4 sm:mt-6 text-base sm:text-lg text-gray-700 font-medium px-4"></p>
+            </div>
+            
+            <!-- Matched Roles and Strengths -->
+            <div class="grid md:grid-cols-2 gap-6 mb-6">
+                
+                <!-- Matched Roles -->
+                <div class="bg-white rounded-2xl card-shadow p-8">
+                    <div class="flex items-center mb-6">
+                        <svg class="w-7 h-7 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
+                        </svg>
+                        <h3 class="text-2xl font-bold text-gray-800">Top Matching Job Roles</h3>
+                    </div>
+                    <div id="matchedRoles" class="space-y-4"></div>
+                </div>
+                
+                <!-- Strengths -->
+                <div class="bg-white rounded-2xl card-shadow p-8">
+                    <div class="flex items-center mb-6">
+                        <svg class="w-7 h-7 text-green-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <h3 class="text-2xl font-bold text-gray-800">Your Strengths</h3>
+                    </div>
+                    <div id="strengthsList" class="space-y-3"></div>
+                </div>
+            </div>
+            
+            <!-- Improvements -->
+            <div class="bg-white rounded-2xl card-shadow p-8 mb-6">
+                <div class="flex items-center mb-6">
+                    <svg class="w-7 h-7 text-orange-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                    </svg>
+                    <h3 class="text-2xl font-bold text-gray-800">Areas for Improvement</h3>
+                </div>
+                <div id="improvementsList" class="grid md:grid-cols-2 gap-4"></div>
+                
+                <!-- Message when no improvements needed -->
+                <div id="noImprovementsMessage" class="hidden text-center py-8">
+                    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-2xl font-bold text-green-600 mb-2">🎉 Excellent Work!</h4>
+                    <p class="text-gray-700 text-lg">Your resume is outstanding! No improvements needed at this time.</p>
+                    <p class="text-gray-600 mt-2">Keep up the great work!</p>
+                </div>
+            </div>
+            
+            <!-- Skills Analysis -->
+            <div class="bg-white rounded-2xl card-shadow p-8">
+                <h3 class="text-2xl font-bold text-gray-800 mb-6">Skills Analysis</h3>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div>
+                        <h4 class="font-bold text-green-600 mb-4 text-lg flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Skills Found in Your Resume
+                        </h4>
+                        <div id="foundSkills" class="flex flex-wrap gap-2"></div>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-red-600 mb-4 text-lg flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            Missing Key Skills (Add These!)
+                        </h4>
+                        <div id="missingSkills" class="flex flex-wrap gap-2"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- JAVASCRIPT - All Interactive Functionality  -->
+    <!-- ============================================ -->
+    <script>
+        // ========================================
+        // NAVBAR FUNCTIONALITY
+        // ========================================
+        
+        // Mobile menu toggle
+        const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+        const mobileMenu = document.getElementById('mobileMenu');
+        
+        mobileMenuBtn.addEventListener('click', () => {
+            mobileMenu.classList.toggle('active');
+        });
+        
+        // Close mobile menu when clicking on a link
+        const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+        mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.remove('active');
+            });
+        });
+        
+        // ========================================
+        // FILE UPLOAD FUNCTIONALITY
+        // ========================================
+        
+        const fileInput = document.getElementById('fileInput');
+        const dropZone = document.getElementById('dropZone');
+        const fileName = document.getElementById('fileName');
+        const analyzeBtn = document.getElementById('analyzeBtn');
+        const demoBtn = document.getElementById('demoBtn');
+        const downloadDemoBtn = document.getElementById('downloadDemoBtn');
+        const loadingState = document.getElementById('loadingState');
+        const resultsSection = document.getElementById('resultsSection');
+        
+        let selectedFile = null;
+
+        // Click to upload
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        // File selection
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                selectedFile = e.target.files[0];
+                fileName.textContent = selectedFile.name;
+                fileName.classList.remove('hidden');
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        // ========================================
+        // DRAG AND DROP FUNCTIONALITY
+        // ========================================
+        
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('border-blue-500', 'bg-blue-50');
+        });
+
+        dropZone.addEventListener('dragleave', () => {
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+        });
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('border-blue-500', 'bg-blue-50');
+            
+            if (e.dataTransfer.files.length > 0) {
+                selectedFile = e.dataTransfer.files[0];
+                fileInput.files = e.dataTransfer.files;
+                fileName.textContent = selectedFile.name;
+                fileName.classList.remove('hidden');
+                analyzeBtn.disabled = false;
+            }
+        });
+
+        // ========================================
+        // ANALYZE RESUME BUTTON
+        // ========================================
+        
+        analyzeBtn.addEventListener('click', async () => {
+            if (!selectedFile) {
+                alert('Please select a file first');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('resume', selectedFile);
+
+            loadingState.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                    // Scroll to results
+                    setTimeout(() => {
+                        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                } else {
+                    alert(data.error || 'Error analyzing resume');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        });
+
+        // ========================================
+        // DEMO RESUME BUTTON
+        // ========================================
+        
+        demoBtn.addEventListener('click', async () => {
+            loadingState.classList.remove('hidden');
+            resultsSection.classList.add('hidden');
+
+            try {
+                const response = await fetch('/demo');
+                const data = await response.json();
+
+                if (response.ok) {
+                    displayResults(data);
+                    // Scroll to results
+                    setTimeout(() => {
+                        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }, 300);
+                } else {
+                    alert(data.error || 'Error loading demo');
+                }
+            } catch (error) {
+                alert('Error: ' + error.message);
+            } finally {
+                loadingState.classList.add('hidden');
+            }
+        });
+
+        // ========================================
+        // DOWNLOAD DEMO RESUME BUTTON
+        // ========================================
+        
+        downloadDemoBtn.addEventListener('click', () => {
+            window.location.href = '/download-demo';
+        });
+
+        // ========================================
+        // DISPLAY RESULTS FUNCTION
+        // ========================================
+        
+        function displayResults(data) {
+            // Score
+            const scoreValue = document.getElementById('scoreValue');
+            const scoreCircle = document.getElementById('scoreCircle');
+            const scoreMessage = document.getElementById('scoreMessage');
+            
+            scoreValue.textContent = data.score;
+            scoreValue.className = 'text-7xl font-bold text-white';
+            
+            // Score color and styling
+            if (data.score >= 80) {
+                scoreCircle.style.background = 'linear-gradient(135deg, #10b981 0%, #059669 100%)';
+                scoreCircle.style.boxShadow = '0 20px 60px rgba(16, 185, 129, 0.4)';
+                scoreMessage.textContent = '🎉 Excellent! Your resume is outstanding!';
+                scoreMessage.className = 'mt-6 text-lg text-green-600 font-bold';
+            } else if (data.score >= 60) {
+                scoreCircle.style.background = 'linear-gradient(135deg, #f59e0b 0%, #d97706 100%)';
+                scoreCircle.style.boxShadow = '0 20px 60px rgba(245, 158, 11, 0.4)';
+                scoreMessage.textContent = '👍 Good! A few improvements will make it great!';
+                scoreMessage.className = 'mt-6 text-lg text-yellow-600 font-bold';
+            } else {
+                scoreCircle.style.background = 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)';
+                scoreCircle.style.boxShadow = '0 20px 60px rgba(239, 68, 68, 0.4)';
+                scoreMessage.textContent = '💪 Needs work. Follow our suggestions below!';
+                scoreMessage.className = 'mt-6 text-lg text-red-600 font-bold';
+            }
+
+            // Matched roles
+            const matchedRoles = document.getElementById('matchedRoles');
+            matchedRoles.innerHTML = data.matched_roles.map(role => `
+                <div class="bg-purple-50 rounded-lg p-4 flex justify-between items-center hover:bg-purple-100 transition">
+                    <div>
+                        <div class="font-semibold text-gray-800">${role.role}</div>
+                        <div class="text-sm text-gray-600">${role.matched_skills}/${role.total_skills} skills matched</div>
+                    </div>
+                    <div class="text-2xl font-bold text-purple-600">${role.match}%</div>
+                </div>
+            `).join('');
+
+            // Strengths
+            const strengthsList = document.getElementById('strengthsList');
+            strengthsList.innerHTML = data.strengths.map(strength => `
+                <div class="flex items-start bg-green-50 p-3 rounded-lg">
+                    <svg class="w-5 h-5 text-green-600 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    <span class="text-gray-700">${strength}</span>
+                </div>
+            `).join('');
+
+            // Improvements
+            const improvementsList = document.getElementById('improvementsList');
+            const noImprovementsMessage = document.getElementById('noImprovementsMessage');
+            
+            if (data.improvements && data.improvements.length > 0) {
+                improvementsList.innerHTML = data.improvements.map(improvement => `
+                    <div class="bg-orange-50 p-4 rounded-lg hover:bg-orange-100 transition">
+                        <div class="flex items-start">
+                            <svg class="w-5 h-5 text-orange-600 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <span class="text-gray-700">${improvement}</span>
+                        </div>
+                    </div>
+                `).join('');
+                improvementsList.classList.remove('hidden');
+                noImprovementsMessage.classList.add('hidden');
+            } else {
+                // No improvements - show congratulations message
+                improvementsList.classList.add('hidden');
+                noImprovementsMessage.classList.remove('hidden');
+            }
+
+            // Skills
+            const foundSkills = document.getElementById('foundSkills');
+            foundSkills.innerHTML = data.skills.found.map(skill => `
+                <span class="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">${skill}</span>
+            `).join('');
+
+            const missingSkills = document.getElementById('missingSkills');
+            missingSkills.innerHTML = data.skills.missing.map(skill => `
+                <span class="bg-red-100 text-red-800 px-3 py-1 rounded-full text-sm font-medium">${skill}</span>
+            `).join('');
+
+            resultsSection.classList.remove('hidden');
+            resultsSection.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+    
+    <!-- ============================================ -->
+    <!-- FOOTER - Copyright Section                  -->
+    <!-- ============================================ -->
+    <footer class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white mt-16">
+        <div class="container mx-auto px-4 sm:px-6 py-8 sm:py-12">
+            <!-- Main Footer Content -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <!-- Brand Section -->
+                <div class="text-center md:text-left">
+                    <div class="flex items-center justify-center md:justify-start space-x-3 mb-4">
+                        <div class="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                        </div>
+                        <span class="text-2xl font-bold">Ana.ai</span>
+                    </div>
+                    <p class="text-blue-100 text-sm">
+                        AI-Powered Resume Analysis with Machine Learning
+                    </p>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="text-center">
+                    <h3 class="text-lg font-bold mb-4">Quick Links</h3>
+                    <div class="space-y-2">
+                        <a href="#home" class="block text-blue-100 hover:text-white transition text-sm">Home</a>
+                        <a href="#upload" class="block text-blue-100 hover:text-white transition text-sm">Upload Resume</a>
+                        <a href="#features" class="block text-blue-100 hover:text-white transition text-sm">Features</a>
+                        <a href="#how-it-works" class="block text-blue-100 hover:text-white transition text-sm">How It Works</a>
+                    </div>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="text-center md:text-right">
+                    <h3 class="text-lg font-bold mb-4">Connect</h3>
+                    <div class="space-y-2">
+                        <p class="text-blue-100 text-sm">Created with ❤️ by</p>
+                        <p class="text-white font-bold text-lg">@Vijay Shahi</p>
+                        <div class="flex justify-center md:justify-end space-x-4 mt-4">
+                            <a href="https://github.com/vijayshahiii" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition" aria-label="GitHub">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                                </svg>
+                            </a>
+                            <a href="https://www.linkedin.com/in/vijayshahi/" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition" aria-label="LinkedIn">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+                                </svg>
+                            </a>
+                            <a href="https://x.com/home" class="w-10 h-10 bg-white/20 hover:bg-white/30 rounded-full flex items-center justify-center transition" aria-label="Twitter">
+                                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                                    <path d="M23 3a10.9 10.9 0 01-3.14 1.53 4.48 4.48 0 00-7.86 3v1A10.66 10.66 0 013 4s-4 9 5 13a11.64 11.64 0 01-7 2c9 5 20 0 20-11.5a4.5 4.5 0 00-.08-.83A7.72 7.72 0 0023 3z"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="border-t border-white/20 pt-6 sm:pt-8">
+                <div class="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+                    <p class="text-blue-100 text-sm text-center sm:text-left">
+                        © 2024 <span class="font-bold text-white">Ana.ai</span> - All rights reserved
+                    </p>
+                    <p class="text-blue-100 text-sm text-center sm:text-right">
+                        Developed by <span class="font-bold text-white">@Vijay Shahi</span>
+                    </p>
+                </div>
+                <p class="text-center text-blue-200 text-xs mt-4">
+                    Powered by Machine Learning & Artificial Intelligence
+                </p>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
